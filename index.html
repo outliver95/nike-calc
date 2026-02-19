@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>아인 & 에이다 웡 공격력 비교</title>
+    <style>
+        body { font-family: 'Pretendard', sans-serif; background: #0f111a; color: #e0e0e0; padding: 20px; display: flex; justify-content: center; }
+        .card { background: #1a1d29; padding: 2rem; border-radius: 16px; box-shadow: 0 10px 30px rgba(0,0,0,0.6); width: 100%; max-width: 650px; border: 1px solid #2d3245; }
+        h2 { text-align: center; color: #ffca28; margin-bottom: 1.5rem; text-transform: uppercase; letter-spacing: 1px; }
+        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px; }
+        .input-group { margin-bottom: 12px; }
+        label { display: block; margin-bottom: 6px; font-weight: bold; font-size: 0.85rem; color: #94a3b8; }
+        input { width: 100%; padding: 12px; border: 1px solid #334155; border-radius: 8px; box-sizing: border-box; background: #0f172a; color: #f8fafc; font-size: 1rem; transition: all 0.3s; }
+        input:focus { border-color: #ffca28; outline: none; box-shadow: 0 0 0 2px rgba(255, 202, 40, 0.2); }
+        
+        .result-section { margin-top: 25px; background: #1e293b; padding: 15px; border-radius: 12px; border: 1px solid #334155; }
+        h3 { margin-top: 0; font-size: 1.1rem; color: #38bdf8; border-left: 4px solid #38bdf8; padding-left: 10px; margin-bottom: 15px; }
+        table { width: 100%; border-collapse: collapse; }
+        th, td { border: 1px solid #334155; padding: 12px; text-align: center; }
+        th { background: #0f172a; color: #64748b; font-size: 0.8rem; }
+        
+        .winner { background-color: rgba(56, 189, 248, 0.15); color: #38bdf8; font-weight: bold; border: 2px solid #38bdf8 !important; }
+        .unit-name { font-weight: bold; color: #f1f5f9; }
+        .info-tag { font-size: 0.75rem; color: #ffca28; margin-bottom: 10px; display: block; }
+    </style>
+</head>
+<body>
+
+<div class="card">
+    <h2>📊 아인 & 에이다 비교 계산기</h2>
+    
+    <div class="grid">
+        <div class="column">
+            <h4 style="color: #ffca28; border-bottom: 1px solid #ffca28; padding-bottom: 5px; margin-top: 0;">에이다 웡</h4>
+            <div class="input-group">
+                <label>400렙 기초 공격력</label>
+                <input type="number" id="atkZ" value="81452" oninput="calculate()">
+            </div>
+            <div class="input-group">
+                <label>오버로드 공증(%)</label>
+                <input type="number" id="overZ" value="0" step="0.01" oninput="calculate()">
+            </div>
+        </div>
+
+        <div class="column">
+            <h4 style="color: #38bdf8; border-bottom: 1px solid #38bdf8; padding-bottom: 5px; margin-top: 0;">아인</h4>
+            <div class="input-group">
+                <label>400렙 기초 공격력</label>
+                <input type="number" id="atkE" value="81452" oninput="calculate()">
+            </div>
+            <div class="input-group">
+                <label>오버로드 공증(%)</label>
+                <input type="number" id="overE" value="0" step="0.01" oninput="calculate()">
+            </div>
+        </div>
+    </div>
+
+    <div class="result-section">
+        <h3>1. 에이다 웡 버스트 시</h3>
+        <span class="info-tag">[애미란다 40.4%, 웡1스 60%, 웡버스트 40%, 아인1스 70.12%]</span>
+        <table>
+            <thead><tr><th>니케</th><th>최종 공격력</th></tr></thead>
+            <tbody>
+                <tr><td class="unit-name">에이다 웡</td><td id="res_z_z">-</td></tr>
+                <tr><td class="unit-name">아인 (Ein)</td><td id="res_z_e">-</td></tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div class="result-section">
+        <h3>2. 아인 버스트 시</h3>
+        <span class="info-tag">[애미란다 40.4%, 아인1스 70.12%, 웡1스(시공증) 60%]</span>
+        <table>
+            <thead><tr><th>니케</th><th>최종 공격력</th></tr></thead>
+            <tbody>
+                <tr><td class="unit-name">에이다 웡</td><td id="res_e_z">-</td></tr>
+                <tr><td class="unit-name">아인 (Ein)</td><td id="res_e_e">-</td></tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<script>
+function calculate() {
+    // 입력값
+    const atkZ = parseFloat(document.getElementById('atkZ').value) || 0;
+    const overZ = (parseFloat(document.getElementById('overZ').value) || 0) / 100;
+    const atkE = parseFloat(document.getElementById('atkE').value) || 0;
+    const overE = (parseFloat(document.getElementById('overE').value) || 0) / 100;
+
+    // 고정 스킬 계수
+    const ami = 0.404;    // 애미 공증
+    const z1s = 0.6;      // 웡 1스 시공증
+    const zBurst = 0.4;   // 웡 버스트 공증
+    const e1s = 0.7012;   // 아인 1스
+
+    // --- 1. 에이다 웡 버스트 상황 ---
+    // 웡: (1 + 0.404 + 0.6 + 0.40 + 웡오버) * 기초공
+    const res_z_z = atkZ * (1 + ami + z1s + zBurst + overZ);
+    // 아인: (1 + 0.404 + 0.7012 + 아인오버) * 기초공
+    const res_z_e = atkE * (1 + ami + e1s + overE);
+
+    // --- 2. 아인 버스트 상황 ---
+    // 웡: (1 + 0.404 + 웡오버) * 기초공
+    const res_e_z = atkZ * (1 + ami + overZ);
+    // 아인: (1 + 0.404 + 0.7012 + 0.6 + 아인오버) * 기초공
+    const res_e_e = atkE * (1 + ami + e1s + z1s + overE);
+
+    // 출력 업데이트
+    updateDisplay('res_z_z', res_z_z, 'res_z_e', res_z_e);
+    updateDisplay('res_e_z', res_e_z, 'res_e_e', res_e_e);
+}
+
+function updateDisplay(id1, val1, id2, val2) {
+    const el1 = document.getElementById(id1);
+    const el2 = document.getElementById(id2);
+    
+    el1.innerText = Math.floor(val1).toLocaleString();
+    el2.innerText = Math.floor(val2).toLocaleString();
+
+    el1.classList.remove('winner');
+    el2.classList.remove('winner');
+
+    // 더 높은 수치 강조
+    if (val1 > val2) el1.classList.add('winner');
+    else if (val2 > val1) el2.classList.add('winner');
+}
+
+// 초기 실행
+calculate();
+</script>
+
+</body>
+</html>
